@@ -1,5 +1,4 @@
-//This board only purpose is to display the edge list in sequential 
-//and not take in invalid edgelist.
+//This board only purpose is to display the edge list sequentially and not take in invalid edgelist.
 class Board{
 	constructor(n, m) {
 		this.limY = n;
@@ -53,12 +52,13 @@ class Board{
 	passEdgeList(list) {
 		if(this.checkEdgeList(list)) {
 			list.forEach((edge, i) => {
-				this.board[edge[0]][edge[1]] = i + 1;
+				this.board[edge[0]][edge[1]] = i;
 			});
 		} else console.error('Out of bound move in list!!');
 	}
 
 	//Modify to return the false edge if wanted to
+	//Not acounted for duplicates here
 	checkEdgeList(list) {
 		for(let i = 0;i < list.length;i++) {
 			if(!(list[i][0] >= 0 && list[i][0] < this.limY && list[i][1] >= 0 && list[i][1] < this.limX))

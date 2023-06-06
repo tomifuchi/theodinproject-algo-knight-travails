@@ -1,8 +1,8 @@
-const {LinkedList} = require('../dependencies/LinkedList');
-const {Board} = require('./chessboard');
-const {BST, prettyPrint, levelOrderIter} = require('../dependencies/bst');
+const {LinkedList} = require('../dependencies/LinkedList'); //Queue using linked list
+const {BST} = require('../dependencies/bst');
 
-//for this exercise the not commented out if sufficient
+//for this exercise the commented out shouldn't be needed. if you are making 
+//real chess. It's advise to use the extra propertises
 class Knight {
 	//Knight for n x m playing board
 	//constructor(n, m, currentPos) {
@@ -16,22 +16,23 @@ class Knight {
 	//It can be any position not necessarily knight's current.
 	//because it still checks 8x8 it will return [] if bullshits are detected.
 	getNextMove(currentPos) {
-		const nextValidMove = [];
-		//Should go 2 steps up or down then 1 step left or right then two to the left and right.
-		const knightMoves = [
-			[currentPos[0] - 2,currentPos[1] - 1], //A
-			[currentPos[0] - 2,currentPos[1] + 1], //B
-			[currentPos[0] - 1,currentPos[1] + 2], //C
-			[currentPos[0] + 1,currentPos[1] + 2], //D
-			[currentPos[0] + 2,currentPos[1] + 1], //E
-			[currentPos[0] + 2,currentPos[1] - 1], //F
-			[currentPos[0] + 1,currentPos[1] - 2], //G
-			[currentPos[0] - 1,currentPos[1] - 2]  //H
-		]
+		if(this.checkValidBound(currentPos)) {
+			const nextValidMoves = [];
+			//Should go 2 steps up or down then 1 step left or right then two to the left and right.
+			const knightMoves = [
+				[currentPos[0] - 2,currentPos[1] - 1], //A
+				[currentPos[0] - 2,currentPos[1] + 1], //B
+				[currentPos[0] - 1,currentPos[1] + 2], //C
+				[currentPos[0] + 1,currentPos[1] + 2], //D
+				[currentPos[0] + 2,currentPos[1] + 1], //E
+				[currentPos[0] + 2,currentPos[1] - 1], //F
+				[currentPos[0] + 1,currentPos[1] - 2], //G
+				[currentPos[0] - 1,currentPos[1] - 2]  //H
+			]
+			knightMoves.forEach(move => {if(this.checkValidBound(move)) nextValidMoves.push(move)})
 
-		knightMoves.forEach(move => {if(this.checkOutOfBound(move)) nextValidMove.push(move)})
-
-		return nextValidMove;
+			return nextValidMoves;
+		}
 	}
 
 	/*
@@ -42,80 +43,83 @@ class Knight {
 		}
 	}*/
 
-	checkOutOfBound(nextMove) {
+	checkValidBound(nextMove) {
 		return (
 			nextMove[0] >= 0 && nextMove[0] < this.limY
 			&&
 			nextMove[1] >= 0 && nextMove[1] < this.limX
 		);
 	}
-}
+	
+	//In theory. if every positions on the chessboard are accessable or every vertice are connected.
+	//that would mean this is an undirected graph, and from the current position to the position we wanted to get to we can use BFS.
+	//https://www.khanacademy.org/computing/computer-science/algorithms/breadth-first-search/a/breadth-first-search-and-its-uses
+	explore(start, dest) {
+		if(this.checkValidBound(start) && this.checkValidBound(dest)){
+			const visited = [];
+			const q = new LinkedList();
+			q.append(start);
+			visited.push({pred: null, v: start});
 
-//In theory. if every position in the chessboard is accessable or a vertex in a graph
-//that would mean it's an undirected graph from the current position to the position we wanted to get to.
-//they are connected. So we can ulitilzed BFS to get to where we wanted to go.
-function explore(k, start, dist){
-	const visited = [];
-	const q = new LinkedList();
-	q.append(start);
-	visited.push({pred: null, v: start});
+			while(!q.isEmpty()) {
+				const cur = q.removeAt(0);
+				const validMoves = this.getNextMove(cur)
+				//console.log('Considering move: ', cur);
 
-	while(!q.isEmpty()) {
-		const cur = q.removeAt(0);
-		const validMoves = k.getNextMove(cur)
-		//console.log('Considering move: ', cur);
+				//If not visited
+				for(let i = 0;i < validMoves.length;i++){
+					const nextMove = validMoves[i];
+					//console.log('Consider valid move: ', nextMove);
 
-		//If not visited
-		for(let i = 0;i < validMoves.length;i++){
-			const currentMove = validMoves[i];
-			//console.log('Consider valid move: ', currentMove);
+					if(nextMove[0] == dest[0] && nextMove[1] == dest[1]){
+						//console.log('FOUND!')
+						visited.push({pred: cur, v: nextMove});
+						return visited;
+					}
 
-			if(currentMove[0] == dist[0] && currentMove[1] == dist[1]){
-				//console.log('FOUND!')
-				visited.push({pred: cur, v: currentMove});
-				return visited;
+					if(visited.findIndex((visited) => nextMove[0] == visited[0] && nextMove[1] == visited[1]) == -1){
+						visited.push({pred: cur, v: nextMove});
+						q.append(nextMove);
+					}
+
+
+				}
 			}
-
-			if(visited.findIndex((visited) => currentMove[0] == visited[0] && currentMove[1] == visited[1]) == -1){
-				visited.push({pred: cur, v: currentMove});
-				q.append(currentMove);
-			}
+			//Should not get here since the destination should be found
+			return [];
 		}
 	}
-}
 
-function cpr (a , b) {
-	return (a[0] == b[0] && a[1] == b[1]);
-}
+	//Have to search through a list, use bst here if you wanted to
+	static backtrack(list, start, dest) {
+		function cpr (a , b) {
+			return (a[0] == b[0] && a[1] == b[1]);
+		}
 
-//Use if found dist should at the end
-function backtrack(list, start, dist) {
-	arr = [];
-	let cur = list[list.length - 1];
-	arr.push(cur);
-	while(true) {
-		if(cpr(cur.v, start)) 
-			break;
+		let arr = [];
+		let cur = list[list.length - 1];
+		arr.push(cur);
+		while(true) {
+			if(cpr(cur.v, start)) 
+				break;
 
-		const pred = list.find(move => {
-			//console.log(move);
-			return cpr(cur.pred,move.v)
-		})
-		arr.push(pred);
-		cur = pred;
+			const pred = list.find(move => {
+				//console.log(move);
+				return cpr(cur.pred,move.v)
+			})
+			arr.push(pred);
+			cur = pred;
+		}
+
+		return arr.map(move => move.v).reverse();
 	}
-	//console.log(arr);
-	let barr = arr.map(move => move.v).reverse();
-	return barr;
+
+	shortestPath(start, dest) {
+		const el = this.explore(start, dest)
+		const p = Knight.backtrack(el, start, dest)
+
+		return p;
+	}
 }
 
-function shortestPath(n, m, start, dist) {
-	const k = new Knight(n,m);
-	const el = explore(k, start, dist)
-	const p = backtrack(el, start, dist)
-
-	return p;
-}
-console.log(shortestPath(8, 8, [3, 4], [0, 0]));
-
-module.exports = {shortestPath}
+module.exports = {Knight}

@@ -1,4 +1,3 @@
-const {BST, prettyPrint, inOrderRecur} = require('./dependencies/bst');
 const {Knight} = require('./submodules/knight');
 const {Board} = require('./submodules/chessboard');
 
@@ -7,42 +6,14 @@ const {Board} = require('./submodules/chessboard');
 //https://chess.stackexchange.com/questions/34588/how-many-moves-needed-for-a-knight-to-go-from-any-square-to-any-other-square
 //https://en.wikipedia.org/wiki/Shortest_path_problem
 
-//We will do edgelist for this exercise.
-class Graph {
-	//Takes in an edgelist as default stored in a binary search tree
-	constructor(el) {
-		this.list = new BST(el, (a, b) => {
-			if(a[0] == b[0]) {
-				if(a[1] < b[1]) return -1;
-				else if (a[1] > b[1]) return 1;
-				else return 0;
-			} else {
-				if(a[0] < b[0]) {
-					return -1;
-				} else if (a[0] > b[0]) return 1;
-				else return 0;
-			}
-		})
-	}
+const dim = {n: 8, m: 8}
+const start = [3, 4]; 
+const dest  = [0, 0];
 
-	getAdjacents() {
-	}
-}
+const k = new Knight(dim.n, dim.m); //Make an 8x8 knight
+const b = new Board(dim.n, dim.m); //Make to display 8x8 board that display edgelist in sequence.
+const p = k.shortestPath(start, dest); //Get shortest path in edge list format
+b.passEdgeList(p); //Pass to the board to be display
 
-//knight on a 8x8 chessboard starting at [0, 0] or top left of playing board
-const k = new Knight(8, 8, [0, 0]);
-
-
-//Get all possible move for each vertex
-const allPossibleKnightMoves = []
-function explore() {
-	for(let i = 0;i < 8;i++){
-		for(let j = 0;j < 8;j++) {
-			allPossibleKnightMoves.push(k.getNextMove([i, j]))
-		}
-	}
-}
-explore();
-
-const g = new Graph(allPossibleKnightMoves.flat())
-prettyPrint(g.list.root);
+console.log(`Path from ${start} to ${dest} on an ${dim.n}x${dim.m} chess board using a knight`);
+b.printBoard(); //Print the board out
