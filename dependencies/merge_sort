@@ -13,8 +13,8 @@ function merge_sort(arr, compFn = defaultCompareFn) {
 		return arr;
 	} else {
 		let [left, right] = splitArr(arr);
-		const sortedLeft = merge_sort(left);
-		const sortedRight = merge_sort(right);
+		const sortedLeft = merge_sort(left, compFn);
+		const sortedRight = merge_sort(right, compFn);
 		return merge_arr(sortedLeft, sortedRight, compFn);
 	}
 }

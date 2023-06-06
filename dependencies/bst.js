@@ -134,8 +134,7 @@ class BST{
 	//Should it be the root then it would have no parent hence [null, node itself]
 	//Or it would be [parent's node, node itself]
 	//Or not found to be [null, null]
-	findNode(val) {
-		const comp = this.#compFn;
+	findNode(val, comp=this.#compFn) {
 		function traverse(current, value) {
 			if(comp(current.value, value) === 1) {
 				if(current.left) {
@@ -331,4 +330,3 @@ function getRandomInt(min, max) {
 //prettyPrint(treeOfObj.root);
 
 module.exports = {BST, prettyPrint, inOrderRecur, levelOrderIter, Node, height}
-

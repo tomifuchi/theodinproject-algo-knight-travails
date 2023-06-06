@@ -1,5 +1,5 @@
 const {LinkedList} = require('../dependencies/LinkedList'); //Queue using linked list
-const {BST} = require('../dependencies/bst');
+const {BST, prettyPrint, inOrderRecur} = require('../dependencies/bst');
 
 //for this exercise the commented out shouldn't be needed. if you are making 
 //real chess. It's advise to use the extra propertises
@@ -114,6 +114,68 @@ class Knight {
 		return arr.map(move => move.v).reverse();
 	}
 
+	exploreTree(start, dest) {
+		if(this.checkValidBound(start) && this.checkValidBound(dest)){
+			const tree = new BST([{pred: null, v: start}], cmprFunction)
+
+			const q = new LinkedList();
+			q.append(start);
+
+			while(!q.isEmpty()) {
+				const cur = q.removeAt(0);
+				const validMoves = this.getNextMove(cur)
+				//console.log('Considering move: ', cur);
+
+				//If not visited
+				for(let i = 0;i < validMoves.length;i++){
+					const nextMove = validMoves[i];
+					//console.log('Consider valid move: ', nextMove);
+					//debugger;
+
+					if(nextMove[0] == dest[0] && nextMove[1] == dest[1]){
+						//console.log('FOUND!')
+						tree.insert({pred: cur, v: nextMove});
+						//debugger;
+						tree.rebalance();
+						return tree;
+					}
+
+					const [parrent, node] = tree.findNode({pred: null, v: nextMove});
+					if(node === null){
+						tree.insert({pred: cur, v: nextMove});
+						q.append(nextMove);
+					}
+
+
+				}
+			}
+			//Should not get here since the destination should be found
+			return [];
+		}
+	}
+
+	//Have to search through a list, use bst here if you wanted to
+	static backtrackTree(tree, start, dest) {
+		//debugger;
+		//console.log(inOrderRecur(tree.root))
+
+		let arr = [];
+		for(let cur = dest;(cur[0] != start[0] || cur[1] != start[1]);) {
+			const [parentNode, node] = tree.findNode({pred:null, v: cur})
+			arr.push(node.value.v);
+			cur = node.value.pred;
+		}
+		arr.push(start);
+
+		return arr.reverse();
+	}
+	shortestPathTree(start, dest) {
+		const el = this.exploreTree(start, dest)
+		const p = Knight.backtrackTree(el, start, dest)
+
+		return p;
+	}
+
 	shortestPath(start, dest) {
 		const el = this.explore(start, dest)
 		const p = Knight.backtrack(el, start, dest)
@@ -122,4 +184,28 @@ class Knight {
 	}
 }
 
-module.exports = {Knight}
+function cmprFunction(a, b) {
+	if(a.v[0] == b.v[0]) {
+		if(a.v[1] < b.v[1]) return -1;
+		else if (a.v[1] > b.v[1]) return 1;
+		else return 0;
+	} else {
+		if(a.v[0] < b.v[0]) {
+			return -1;
+		} else if (a.v[0] > b.v[0]) return 1;
+		else return 0;
+	}
+}
+
+function checkLegitPath(n, m, moves) {
+	const k = new Knight(n,m);
+
+	for(let i = 0;i < moves.length - 1;i++) {
+		if(k.getNextMove(moves[i]).findIndex((move) => move[0] == moves[i+1][0] && move[1] == moves[i+1][1]) == -1)
+			return false;
+	}
+	return true;
+}
+
+
+module.exports = {Knight, checkLegitPath}
